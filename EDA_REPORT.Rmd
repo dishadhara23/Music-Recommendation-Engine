@@ -1,0 +1,368 @@
+---
+title: "Exploratory Data Analysis Report"
+author: "Disha Dhara"
+date: "2025-12-28"
+output:
+  pdf_document:
+    latex_engine: xelatex
+    
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+
+## INTRODUCTION
+
+This report represents an Exploratory Data Analysis of a music dataset performed out in R. The aim suggests to analyse the structure, quality, and key patterns in the dataset,  with a certain focal point on how different musical impute relates to song popularity. The dataset, provide a part of the assessment, which includes the mix of numerical and categorical variables which represents the characteristics such as energy, danceability, tempo, and popularity among others.
+
+The scope of this report is restricted to exploratory analysis rather than the predictive modelling. The analysis begins with the data import, cleaning and then preparation to ensure the dataset is suitable for the analysis. This is followed by the descriptive statistical analysis and data visualisation to examine the distributions along with identifying the outliers, and explore the relationships between features. Correlation analysis is also conducted to investigate the associations among numerical variables and to understand how musical features is related to popularity. All this steps are essential for gaining understanding of the dataset and to support any future advanced analysis.
+
+This topic is described in this report because exploratory data analysis is a mandatory step in any of the data-driven projects. Able to understand the feature or aspect and relationships within the dataset allows for the informed interpretation of results and ensures that the subsequent analytical decisions are based on dependable evidence. In the context of music data, exploring audio features and popularity metrics is particularly important, as it helps to reveal common characteristics of popular tracks and highlights potential patterns as per the listener preferences.
+
+The main outcome for this report is to set up of data-driven insights into the statistical properties and relationships present in the music dataset. Through visualisation and correlation analysis, this report identifies the trends, patterns, and anomalies that contribute to a clearer understanding of how musical features differ and interact with the popularity.
+
+## Data Import and Setup
+
+### Libraries Used
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(corrplot)
+library(psych)
+library(dplyr)
+library(readr)
+```
+  
+The **tidyverse** package is a collection of R package desgined for Data Science projects or tasks. This provides efficient tools for data manipulation, visualization, and transformation. Within this report, fucntions such as 'select()', 'mutate()' & different operator are used to clean and process the dataset.
+
+The **ggplot2** package is used to create clear and informative visualizations which includes histogram, box plots, scatter plots and different types of charts and plots. These plots help explore the distribution and relationship between the musical features
+
+The **corrplot** package is used to visualise the correlation matrices, which enables the identification of relationships between numerical variables through correlation heat maps.
+
+The **psych** package is used to generate the descriptive statistics, such as mean, standard deviation, minimum and maximum values, which provides a statistical summary of the data set.
+
+### Loading The Dataset
+  
+```{r data-import}
+in_data <- read_csv("data.csv")
+```
+The dataset `data.csv`, provided as part of the assessment is loaded into R using the 'read_csv()' function.
+
+### Preview of the Dataset
+  
+```{r preview-data}
+head(in_data, 2)
+```
+
+
+## Data Cleaning and Preparation
+
+This part describes the procedures applied to properly clean the data and make it ready for exploratory data analysis. After preparing the data, cleaning is a mandatory step in any analytical workflow, as it ensures that the results obtained from the statistical summary and visualisations are accurate, consistent, and reliable enough to continue with the process . Poor data quality can lead to misleading interpretations thats why we should be carefully preprocess data and its necessary to do it before conducting any further analysis.
+
+The data preparation process starts with selecting only the required features from the dataset and then  examining the dataset for missing or incomplete values followed by removing any duplicate records, and verifying that each variable is stored using an appropriate data type. This  step helps to improve the overall quality of the data present in the dataset and ensure that the data analysis is based on valid and well-structured data.
+
+Feature Selection
+Aligned with the dataset requirements, only features that are directly relevant to musical characteristics and song popularity are kept for further data analysis. This proposition reduces unnecessary complexity and removes variables that do not contribute to the objectives of the exploratory analysis. The features which are selected focus on audio analysis, identification of the attributes, and popularity metrics which are foremost to understand the  patterns within the music dataset.
+
+The features retained for analysis are:
+
+- Acousticness 
+- Artists
+- Danceability
+- Valence
+- Id
+- Liveness
+- Popularity
+- Speechiness 
+- Tempo
+- Name
+- Loudness
+
+```{r feature-selection}
+clean_music_list <-in_data %>%
+  select(acousticness, 
+    artists, 
+    danceability, 
+    valence, 
+    id,
+    liveness, 
+    popularity, 
+    speechiness, 
+    tempo, 
+    name, 
+    loudness
+)
+```
+
+This step helps removing any irrelevant varaibles and focuses the analysis on the features that are directly related to the musical characteristic.
+
+### Checking for Any Missing Values
+```{r missing-values}
+colSums(is.na(clean_music_list))
+```
+
+
+The missing values is calculated for each selected feature to get a count of numbers.If any missing values are present, they can negatively affect the visualization and statistical summarisation.
+
+### Handling Missing Values
+
+Since the dataset present contains a large number of observations, Rows with the missing values are removed to maintain the data consistency and perform exploratory analysis.
+
+```{r remove-missing}
+clean_music_list <- na.omit(clean_music_list)
+```
+
+### Removing Duplicate Records
+
+Duplicate records can be bias analysis and visualisation. These are removed to ensure that the observation represents a unique music track.
+
+```{r remove-duplicates}
+clean_music_list <- distinct(clean_music_list)
+```
+
+### Data Type Conversion
+
+The structure of cleaned dataset is checked to ensure that the varaibles have an appropriate data types.
+
+```{r data-types}
+head(clean_music_list,2)
+```
+Numerical variables such as acousticness, danceability, valence, liveness, popularity, speechiness, tempo & loudness are confirmed to be stored as numeric types. Categorical variables such as artists, name, and id are stored as character variables.
+Since here the data types are already appropriate, no further conversion is required.
+
+## Cleaned Dataset Overview
+
+```{r cleaned-dimension}
+dim(clean_music_list)
+```
+As the data is cleaned with no missing values or duplicates, and has only necessary attributes, the data is ready to be used in for next steps which includes performing descriptions, visualization and analysis of the relationships.
+
+## Descriptive Statistic
+
+In this section, the description statistics have been used to provide a summary of the key features of the dataset. Description statistics enable the understanding of the description of the variables, the measures of central tendency, and the variation of the measures. An appropriate statistical technique has to be used for the numerical variables, as well as the categorical variables.
+
+```{r numerical-summary}
+num_variables <- clean_music_list %>%
+  select(acousticness, 
+    artists, 
+    danceability, 
+    valence, 
+    id,
+    liveness, 
+    popularity, 
+    speechiness, 
+    tempo, 
+    name, 
+    loudness
+    
+  )
+
+summary(num_variables)
+```
+To provide more detailed overview of statistics, additional descriptve measures are calculated using the **psych** package.
+
+### Numerical Variables
+
+When processing numerical variables the calculations performed are applied of mean, median, standard deviation, minimum, and maximum. The results describe the central tendency and dispersion of the musical variables and popularity scores.
+
+```{r psych-describe}
+psych::describe(num_variables)
+```
+
+These statistic overview highlights the variation in musical attribute across different tracks and helps identify features with wide ranges or also identifies wide range outliers.
+
+### Categorical Variables
+
+Categorical variable are summarised using the frequency counts to understand the distribution of values across different categories. In this dataset, artist names and track names are treated as categorical variables.
+
+```{r categorical-summary}
+clean_music_list %>%
+  count(artists, sort = TRUE) %>%
+  head(4)
+
+
+```
+
+This summary identifies the artist having the highest amount of tracks present in data set, providing insights of the dataset composition.
+
+### Interpretation
+
+The nature of the descriptive statistics reveals that there is considerable spread in terms of the music attributes described by variables like energy, danceability, and tempo, among others indicating a good diversity of music style in the dataset. The popularity measures also show a considerable spread in their values.
+
+## Data Visualisation
+
+The use of data visualisation is pertinent to this section as it helps in examining the distribution of musical features, examining the values across different variables, as well as identifying any relationships within the data. Visualisation is a major part of carrying out exploratory data analysis.
+
+Characteristics of Scientific Work as a Factor of
+Distribution plots allow the exploration of the spread of individual variables in a data set. 
+
+Histograms are very helpful in determining the presence of skewed distributions, the convergence of values, and outliers.
+
+All the graphs used are labelled.
+
+
+```{r histogram-popularity}
+ggplot(clean_music_list, aes(x = popularity)) +
+  geom_histogram(bins = 30, fill = "darkgreen", color = "white") +
+  labs(
+    title = "Track Popularity Distribution",
+    x = "Popularity",
+    y = "Frequency"
+  )
+```
+This plot shows how popularity values are distributed across different tracks, highlighting whether the songs have low, moderate, or high popularity scores.
+
+```{r histogram-danceability}
+ggplot(clean_music_list, aes(x = danceability)) +
+  geom_histogram(bins = 30, fill = "steelblue", color = "white") +
+  labs(
+    title = "Danceability Distribution ",
+    x = "Danceability",
+    y = "Frequency"
+  )
+```
+The distribution of danceability provides insights into the intensity levels of songs present in the datasets and indicates whether the tracks are suitable for dancing.
+
+### BoxPlots: 
+                  
+Boxplots are used to compare the distribution of popularity across different levels of musical feature. In this analysis, danceability is grouped into different ranges to examine how popularity varies with danceability.
+
+```{r boxplot-popularity-danceability}
+ggplot(clean_music_list, aes(x = cut(danceability, breaks = 4), y = popularity)) +
+  geom_boxplot(fill = "darkgreen") +
+  labs(
+    title = "Popularity of Danceability Levels",
+    x = "Danceability Level",
+    y = "Popularity"
+    
+  )
+```
+
+This boxplot highlights the difference in between the medain popularity and variability acorss danceability levels, helping to identify whether higher energy level of tracks tend to be more popular for dance.
+
+### Scatter Plots: Relationship Between Continous Variable
+
+Scatter plots are usually utilised to visualise relationship between Continuous Variable. A trend line is added to help identify potential association.
+
+```{r scatter-danceability-popularity}
+ggplot(clean_music_list, aes(x = danceability, y = popularity)) +
+  geom_point(alpha = 0.25) +
+  geom_smooth(method = "lm", se = FALSE, color = "yellow") +
+  labs (
+    title = "Danceability vs Popularity",
+    x = "Danceability",
+    y = "Popularity"
+  )
+```
+
+This Plot explores whether the danceable songs tend to achieve higher popularity and reveals the strength and direction of the relationship.
+
+### Bar Charts: Categorical Features
+
+Bar charts are utilized for the examination of categorical variables, such as artists. This bar charts focal point is  on the artists with greatest number of tracks present within the dataset.
+
+```{r bar-chart-artist}
+clean_music_list %>%
+  count(artists, sort = TRUE) %>%
+  head(15)%>%
+  ggplot(aes(x = reorder(artists, n), y = n)) +
+  geom_bar(stat = "identity", fill = "purple") +
+  coord_flip() +
+  labs(
+    title = "The top 15 Artist by the amount of tracks",
+    x = "Artists",
+    y = "Amount of tracks"
+  )
+```
+
+This bar chart gives insight about the composition of data, as well as which artists feature are more prominent and which could be representative of trends found in the analysis.
+
+### Interpretation
+
+The visualization helps to identify that there are variations in the visualization of music attributes such as energy and danceability. The popularity distribution helps to infer that the popularity of the songs lies in the less popular range. Scatter plots and box plots identify possible correlations between popularity and attributes such as energy and/or danceability, which helps to infer that a correlation analysis should be conducted to explore the attributes.
+
+Taken together, these visualizations offer a lot of insights in the data set and provide the input for the relationship and trend analysis presented in the following section.
+
+## Relationship And Trend Analysis
+The current section will examine relationships within the data that are numerical in nature. The emphasis here will be concerned with the way in which particular characteristics in music relate to popularity. The correlation analysis will be done in such a way that it will consider relationships that are linear in nature. A correlation heat map will be used in creating graphs for visualization.
+
+### Correlation Analysis Of Numerical Featres
+In the correlation analysis, only the numerical variables are considered because correlation coefficients are not applicable to categorical variables. The chosen numerical variables are the most important musical features and the ratings of popularity.
+
+```{r correlation-data}
+numeric_feature_list <- clean_music_list %>%
+  select(
+    acousticness, 
+    danceability, 
+    valence, 
+    liveness, 
+    popularity, 
+    speechiness, 
+    tempo, 
+    loudness
+    
+  )
+correlate_mat <- cor(numeric_feature_list, use = "complete.obs")
+```
+
+### Correlation Heatmap
+
+This heatmap is used to visualize the relationship between the numerical features. Positive correlations indicates that the variables tend to increase together, while the negetive correlations indicates inverse relationship.
+
+```{r correlation-heatmap}
+corrplot(
+  correlate_mat,
+  method = "pie",
+  type = "up",
+  t1.col = "brown",
+  t1.srt = 60,
+  addCoef.col = "darkcyan",
+  number.cex = 0.7
+)
+```
+
+This heatmap helps to easily understand how different features in music relate to each other and to what extent they are related to popul arity.
+
+## Relationship Between Features And Popularity
+
+The correlation results show the following: The attributes of **danceability** and **loudness** have a positive association with the variable of popularity. This is because more rhythmic and loud sounds have a higher level of popularity. This verifies the statement that more popular music in a particular region or area is perhaps the kind of music or sounds that people are much more drawn to.
+
+Acousticness, on the other hand, has a week negative relationship with popularity, meaning that songs that are highly acoustic are less likely to be popular than songs that have high electronic production. Variables such as **liveness** and **speechiness** have week relationships with populary meaning that the two variables have less of an effect on popularity.
+
+In general, the correlations achieved tend to be rather medium in strength and emphasize the fact that the popularity of songs depends on a variety of factors and cannot be attributed exclusively to one attribute of music.
+
+## Insights And Interpretation
+
+This section explains the important findings that have been generated through the use of descriptive statistics, graphical representations, and correlation analysis. The main intention is to highlight the observed phenomena inside the dataset and to propose reasonable explanations based on the characteristics of music and the factors that determine the popularity of songs.
+
+From the distribution plots, it can be observed that popularity is not uniformly distributed across songs, and most songs tends to have lower popularity score, while some songs tend to have higher popularity score. This happens because in music collections, very few songs are widely known, and the rest remain relatively unknown.
+
+Visual analyses of comparison and scatter plots help understand that there are some attributes of music that have a definite correlation with popularity. Specifically, there is a positive correlation between popularity and danceability. It indicates that music that is rhythmically appealing tends to win a broader audience. Another music attribute that tends to have a moderate and positive correlation with popularity is loudness. It could be somehow attributed to production trends that favor louder music.
+
+On the other hand, acousticness has a weak negative association with popularity. This means that very acoustic songs tend to be less popular compared to electronically produced ones. The reason here may be the preference for refined studio recordings of the modern-day listener, which are likely to be more suitable for the playlists of the major platforms.
+
+Features like liveness and speechiness have weak correlations with popularities, and these characteristics do not play an important part in determining a song’s level of popularity. This underlines the fact that popularities depend on a number of musical and cultural factors, and not on a feature alone.
+
+There are also some outliers in the above graphical representations, particularly in the case of songs that are less danceable or acoustic but are still popular. These can be accounted for by the fact that there could be variables that are not in the dataset but still affect the popularity of the songs.
+
+In general, it can be interpreted from these results that although various musical qualities like danceability and loudness are associated with popularity, they do not define popularity. The results tend to confirm that this analysis is exploratory in nature as well, because more than one attribute has been used to define popularity.
+
+## Appendix- AI Transparency Statement
+
+AITS: 1
+
+Descriptor: No AI 
+
+Transparency Statement: No AI	Artificial Intelligence (AI) has not been used for any part of the activity
+
+AI Contributions: AI is not used for any part of the activity.
+
+Human Contribution: All aspects of the activity are human generated, created, edited, and developed.
+
+
+
+
+
